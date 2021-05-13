@@ -1,9 +1,9 @@
-# TP-4 !
+# TP-5 !
 
 ## Tareas
 
 - [ ] Aceptar el assignment y clonar el repositorio con el ejercicio
-- [ ] Ir a la carpeta donde descargaste la kata. Ejemplo: `cd /home/juan/haskell/2020-funcional-tp-4`. Ejecutar `stack build --test`.
+- [ ] Ir a la carpeta donde descargaste la kata. Ejemplo: `cd /home/juan/haskell/2020-funcional-tp-5`. Ejecutar `stack build --test`.
 - [ ] Reemplazar la lista de integrantes con los nombres de los integrantes del equipo en el archivo README.md
 - [ ] Resolver el ejercicio siguiendo [un esquema de trabajo](https://github.com/pdep-utn/enunciados-miercoles-noche/blob/master/pages/haskell/trabajo.md), eso incluye
 - [ ] Ejecutar los tests con `stack test` y que den verde
@@ -18,7 +18,7 @@
 
 ## Objetivos
 
-Los objetivos de este tp son practicar los conceptos vistos en la clase: orden superior y funciones lambda.
+Los objetivos de este tp son practicar los conceptos vistos en la clase: composición y aplicación parcial.
 
 ## Pre-requisitos
 
@@ -58,184 +58,32 @@ Para conocer un poco más del testeo unitario automatizado recomendamos leer [es
 
 ## El enunciado
 
-Resolver este TP  **usando funciones de orden superior**, tienen que tipar y definir todas las funciones, y escribir tests para las mismas (la parte 4 es opcional).
+Resolver este TP  **usando composición y aplicación parcial**.
 
-### Parte 1: Animales
+### Parte 1: Hamburguesas
 
-Dado el siguiente tipo de datos: 
+Nos pusimos una hamburguesería y queremos implementar un sistema para calcular los precios de las hamburguesas que vamos a vender. Cada hamburugesa tiene un precio base y una lista de ingredientes. Partiendo de esto modelamos:
+- **Agrandar**: cada vez que se agranda una hamburguesa se agrega otro ingrediente base (Carne | Pollo), se elige el ingrediente base a agregar según lo que ya haya en la hamburguesa (si había carne se agrega carne, si había pollo se agrega pollo, si había ambos da igual cual se agregue).
+- **AgregarIngrediente**: recibe un ingrediente y una hambrugesa lo agrega a la hamburguesa.
+- **descuento**: recibe un % de descuento, y devuelve la hamburguesa con ese descuento aplicado al valor inicial.
 
-```haskell
-data Animal = Animal{
-    energia :: Number,
-    tipo :: Tipo,
-    peso :: Number
-} deriving(Show)
+Toda esta parte ya esta modelada junto con los precios de cada ingrediente y la función para calcular el precio final junto con la  función para obtener el precio final de una hamburguesa. Y tambien la pdepBurguer que es un cuarto de libra agrandado 2 veces con panceta, cheddar y 20% de descuento.
 
-data Tipo = Volador| Terrestre | Acuatico deriving(Show)
-```
+### PARTE 2: Algunas hamburguesas más
+El negocio se agrando y queremos agregar las siguientes hamburguesas:
+- **dobleCuarto** = es un cuarto de libra con carne y cheddar
+- **bigPdep** =  es un doble cuarto con curry
+- **delDia** = es una promo que dada una hamburguesa, le agrega Papas y un descuento del 30%. Por ej, podría pedir una big pdep del dia y debería ser como una big pdep (doble cuarto con curry) pero con papas y el descuento del 30%.
 
-Vamos a querer modelar y tipar: 
+Las papas son un ingrediente que cuesta $10.
 
-### PARTE 1: Animales
-- **losDeTipo**: recibe un tipo y una lista de animales y nos devuelve aquellos que son de ese tipo. Por Ej:
+### PARTE 3: algunos cambios más 
 
-```haskell
-> tigre = Animal 5 Terrestre 120
-> lechuza = Animal 40 Volador 10
-> tiburon = Animal 100 Acuatico 100
-> losDeTipo Acuatico [tigre, lechuza, tiburon]
-[tiburon]
-```
+Queremos modelar los siguientes modificadores:
+- **hacerVeggie** : cambia todos los ingredientes base que hayan en la hamburguesa por PatiVegano (ingrediente base tambien de precio 10).
+- **cambiarPanDePati** : cambia el Pan que haya en la hamburguesa por PanIntegral (ingrediente de precio 3).
 
-- **animalesHambrientos**: dada una lista de animales, nos devuelve solo aquellos que tienen hambre. Que un animal tenga hambre significa que su energía es menor a 10.
-
-- **entrenar**:
-- Si el animal es terrestre disminuye el peso y la energia en 5.
-- Si el animal es volador solo disminuye su peso en 3.
-- Si el animal es acuatico no hace nada porque es re jodido entrenar un animal acuatico.
-
-    Por ej.:
-    ```haskell
-       > entrenar Animal 140 Terrestre 30
-       Animal 135 Terrestre 25
-       > entrenar Animal 100 Acuatico 100
-       Animal 100 Acuatico 100
-    ```
-
-### PARTE 2: Alimentos y entrenamientos
-
-Queremos modelar los siguientes alimentos:
-- **baya** : aumenta en 5 la energía y el peso en 0.1
-- **carne** : aumenta en 20 la energía y el peso en 2
-
-- **alimentarATodos**: Recibe un alimento y una lista de animales y los alimenta a todos. Ej:
-```haskell
-> alimentarATodos baya [Animal 100 Acuatico 100, Animal 30 Terrestre 20]
-[Animal 105 Acuatico 100.1, Animal 35 Terrestre 20.1]
-```
-
-- **aplicarItinerario** : Dado un animal y una lista de alimentos y entrenamietos se los aplica a todos en orden (haciendo que el animal sufra todos los efectos). Ej: hacer comer una baya, comer carne, luego entrenar 2 veces y finalmente comer otra baya a un leon(energia = 40, tipo = Terrestre, peso = 200) me dejaria un leon(energia= 60, tipo = Terrestre, peso= 192.2). Ejemplo en codigo:
-    ```haskell
-    > aplicarItinerario [entrenar, entrenar] (Animal 25 Terrestre 120)
-    Animal 15 Terrestre 110
-    ```
-    Como poner en la lista del itinerario que coma una baya o que coma carne depende de como hayan modelado las bayas y la carne.
-
-### PARTE 3: Nuestras propias funciones de orden superior
-
-En este punto ustedes van a definir funciones que reciban funciones por parámetro:
-
-- **mapTupla**: recibe una función y una tupla de dos elementos del mismo tipo, y devuelve una tupla con los resultados de aplicar la función a cada valor:
-    ```haskell
-    > mapTupla length ("hola", "mundo")
-    (4, 5)
-    ```
-
-- **menorSegun**: recibe una función y dos valores del mismo tipo. menorSegun devuelve aquel valor cuyo resultado al ser aplicado a la función es mayor. Por ej:
-    ```haskell
-    > menorSegun length "hola" "mundo"
-    "hola" -- porque (length "hola") es 4 y (length "mundo") es 5
-    > menorSegun even 4 3
-    3 -- porque False es menor que True en Haskell
-    > menorSegun length "hola" "chau"
-    4 -- si ambos dan lo mismo, devolver el primero
-    ```
-Definan esta función sin definirle ustedes el tipo. Luego, pregunten el tipo de ésta funcion en Haskell, van a haber algo a lo que hasta ahora no le dimos mucha importancia: `Ord b => (a -> b) -> a -> a -> a`
-¿Qué es ese Ord b?, vamos a hablar de eso la siguiente clase.
-
-- **minimoSegun**: dada una lista y una función, devuelve el menor de toda la lista según la función que se pasó. Por ej:
-    ```haskell
-    > minimoSegun length ["hola", "ornitorrinco", "a"]
-    "a"
-    > minimoSegun energia [tigre, lechuza, tiburon]
-    Animal 5 Terrestre 120 -- el tigre
-    ```
-
-- **aplicarVeces**: dada un número de veces a aplicar, una funcion y un valor. Aplica el valor como parametro a la funcion tantas veces como dice el número.
-
-    Por ej, si la función fuese `siguiente`, el numero de veces fuese 2 y el valor fuese 1, sería lo mismo que hacer: `(siguiente (siguiente 1))`.
-    
-    Si el número de veces fuese 3: `(siguiente (siguiente (siguiente 1)))`.
-    
-    Ejemplo con código:
-    ```haskell
-    > siguiente n = n + 1
-    > aplicarVeces 3 siguiente 1
-    4
-    > aplicarVeces 3 (\n -> n * 2) 1
-    8
-    > aplicarVeces 2 (\texto -> texto ++ "!") "hola"
-    "hola!!"
-    ```
-
-
-- **replicar**: dado un numero y un valor, devuelve una lista con el valor dentro tantas veces como dice el número. Por ej:
-    ```haskell
-    > replicar 3 "hola"
-    ["hola", "hola", "hola"]
-    > replicar 2 True
-    [True, True]
-    ```
-    Esta no es una función de orden superior, pero queremos que la definan usando alguna de las funciones de orden superior que ustedes definieron.
-
-### PARTE 4: Bonus (OPCIONAL). Combinando funciones
-
-En esta parte vamos a aprovechar el orden superior para definir maneras mas interesantes de aplicar funciones que:
-
-```haskell
-funcion (otraFuncion (otraFuncionMas (valor)))
-```
-
-Como primer cosa, queremos implementar el operador **|>**, que dado un valor a su izquierda y una función a su derecha, nos da el resultado de aplicar el valor a la función, por ejemplo:
-
-```haskell
-> "hola" |> length
-4
-> 5 |> (\n -> n + 3)
-8
-```
-
-Una vez que tenemos esto definido, vamos a definir un par de funciones para trabajar con texto:
-
-- **esVocal**: dado un caracter, nos devuelve True si es a, e, i, o, u, A, E, I, O, o U y False si es cualquier otro caracter. Ojo, los caracteres y los strings en haskell se escriben distinto, con comillas dobles "" escriben un string (o lista de caracteres) y con comillas simples '' escriben un caracter. Ejemplo:
-    ```haskell
-    > esVocal 'a'
-    True
-    > esVocal 'f'
-    False
-    ```
-    Pista: pueden usar `elem` (busquenla en la guía de lenguajes) para no tener que repetir demasiados chequeos.
-
-- **primeraLinea**: dado un string, me devuelve ese string hasta el primer caracter de salto de linea (\n) que se encuentre. Pista: pueden usar `takeWhile` que recibe una condicion y una lista y devuelve una lista de todos los elementos hasta antes del primero que no cumple la condición. Ejemplo:
-    ```haskell
-    > primeraLinea "hola\nmundo"
-    "hola"
-    > primeraLinea "como\nva\neso?"
-    "como"
-    ```
-
-- **lasVocales**: dado un string, me devuelve otro string con las vocales del primero en orden. Ejemplo:
-    ```haskell
-    > lasVocales "murcielago"
-    "uieao"
-    > lasVocales "Aeea yo soy sabalero"
-    "Aeeaooaaeo"
-    ```
-
-- **contarVocalesDeLaPrimerLinea**: dado un string, me devuelve la cantidad de vocales que se encuentran en la primer linea. Ejemplo
-    ```haskell
-    > contarVocalesDeLaPrimerLinea "Aeea,\n yo soy sabalero"
-    4
-    > contarVocalesDeLaPrimerLinea "hola\ncomo\nva"
-    2
-    ```
-    Esta función requiere que usen las que definieron acá arriba (y también length), pero traten de definirla tanto aplicando una función atrás de otra con paréntesis, como con `|>` de esta manera:
-
-    `valor |> primeraFuncion |> segundaFuncion`
-
-    como para que puedan comparar como queda.
-
-    Casi que acabamos de definir sintaxis nueva para el lenguaje!
+- hacer el **dobleCuartoVegano** que es un dobleCuarto veggie con pan integral.
 
 
 ## Que hacer cuando terminan el TP
