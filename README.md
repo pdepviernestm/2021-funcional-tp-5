@@ -69,6 +69,7 @@ Nos pusimos una hamburguesería y queremos implementar un sistema para calcular 
 - Cheddar = 10
 - Pollo = 10
 - Curry = 5
+- QuesoDeAlmendras = 15
  
  cuartoDeLibra = es una hamburguesa de pan, carne, cheddar, pan y el valor inicial  es de 20.
 
@@ -91,7 +92,7 @@ Las papas son un ingrediente que cuesta $10.
 ### PARTE 3: algunos cambios más 
 
 Queremos modelar los siguientes modificadores:
-- **hacerVeggie** : cambia todos los ingredientes base que hayan en la hamburguesa por PatiVegano (ingrediente base tambien de precio 10).
+- **hacerVeggie** : cambia todos los ingredientes base que hayan en la hamburguesa por PatiVegano (ingrediente base tambien de precio 10) y el cheddar lo cambia por queso de almendras.
 - **cambiarPanDePati** : cambia el Pan que haya en la hamburguesa por PanIntegral (ingrediente de precio 3).
 
 - hacer el **dobleCuartoVegano** que es un dobleCuarto veggie con pan integral.
